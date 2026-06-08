@@ -1,57 +1,131 @@
 # wifi-scanner
 
-Fast Go CLI for authorized internal network asset discovery. It scans private networks for responsive hosts and open server ports, with speed-first defaults and an explicit deep mode for broader discovery.
+`wifi-scanner`는 허가된 내부망에서 살아있는 장비와 열려 있는 서버 포트를 빠르게 찾는 Go CLI 도구입니다. 기본 모드는 속도 우선으로 자주 쓰는 TCP 서버 포트를 빠르게 훑고, `--deep` 모드는 더 넓은 TCP/UDP 탐색, ARP/SSDP 로컬 발견, 배너 수집까지 수행합니다.
 
-## Install
+> 본 도구는 본인 소유이거나 명시적으로 허가받은 내부망 자산 발견 용도입니다. 취약점 공격, 인증 우회, 비밀번호 대입, 은닉/회피, credential 수집 기능은 포함하지 않습니다.
 
-With Homebrew:
+## 가장 쉬운 설치
+
+Homebrew를 쓰는 macOS/Linux 환경이면 아래 두 줄이면 됩니다.
 
 ```sh
 brew tap bssm-oss/wifi-scanner https://github.com/bssm-oss/wifi-scanner.git
-brew install wifi-scanner
+brew install bssm-oss/wifi-scanner/wifi-scanner
 ```
 
-From source:
+설치 확인:
+
+```sh
+wifi-scanner --version
+```
+
+## 바로 다운로드
+
+Homebrew 없이 릴리스 파일을 직접 받을 수도 있습니다.
+
+macOS Apple Silicon:
+
+```sh
+VERSION=v0.1.0
+curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_darwin_arm64.tar.gz"
+tar -xzf wifi-scanner.tar.gz
+sudo mv wifi-scanner /usr/local/bin/
+wifi-scanner --version
+```
+
+macOS Intel:
+
+```sh
+VERSION=v0.1.0
+curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_darwin_amd64.tar.gz"
+tar -xzf wifi-scanner.tar.gz
+sudo mv wifi-scanner /usr/local/bin/
+wifi-scanner --version
+```
+
+Linux x86_64:
+
+```sh
+VERSION=v0.1.0
+curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_linux_amd64.tar.gz"
+tar -xzf wifi-scanner.tar.gz
+sudo mv wifi-scanner /usr/local/bin/
+wifi-scanner --version
+```
+
+Windows는 [Releases](https://github.com/bssm-oss/wifi-scanner/releases/latest)에서 `windows_amd64.zip` 또는 `windows_arm64.zip`을 받으면 됩니다.
+
+## Go로 설치
+
+Go가 설치되어 있다면 소스에서 바로 설치할 수 있습니다.
 
 ```sh
 go install github.com/bssm-oss/wifi-scanner/cmd/wifi-scanner@latest
 ```
 
-## Usage
+## 빠른 사용법
 
-Fast scan of a CIDR using common server ports:
+현재 활성화된 private IPv4 인터페이스를 자동으로 찾아 기본 포트를 스캔:
+
+```sh
+wifi-scanner
+```
+
+CIDR 대역을 빠르게 스캔:
 
 ```sh
 wifi-scanner --targets 192.168.1.0/24
 ```
 
-Scan a host range and specific ports:
+특정 IP 범위와 포트만 스캔:
 
 ```sh
 wifi-scanner -t 10.0.0.10-50 -p 22,80,443,3000-3010
 ```
 
-Deep scan with all TCP ports, default UDP probes, ARP/SSDP local discovery, and lightweight banners:
+JSON으로 결과 저장:
 
 ```sh
-wifi-scanner --targets 172.16.0.0/24 --deep --format json
+wifi-scanner --targets 192.168.1.0/24 --ports default --format json > assets.json
 ```
 
-CSV output:
+CSV로 결과 저장:
 
 ```sh
 wifi-scanner --targets 192.168.1.0/24 --ports default --format csv > assets.csv
 ```
 
-## Defaults
+더 깊게 찾기:
 
-- If `--targets` is omitted, active private IPv4 interfaces are used.
-- Public IPs are rejected unless `--allow-public` is set.
-- Default TCP ports are a speed-first set of common server ports.
-- `--deep` scans all TCP ports and adds default UDP probes, ARP/SSDP local discovery, and banner collection.
-- `--max-hosts` defaults to `65536` to prevent accidental massive scans.
+```sh
+wifi-scanner --targets 172.16.0.0/24 --deep --format table
+```
 
-## Flags
+`--deep`은 모든 TCP 포트, 기본 UDP probe, ARP/SSDP 로컬 발견, 가벼운 배너 수집을 포함합니다. 오래 걸릴 수 있으므로 처음에는 작은 대역에서 실행하는 것을 권장합니다.
+
+## 결과 예시
+
+```text
+IP         PORT   PROTO  STATUS  SOURCE   LATENCY_MS  BANNER
+127.0.0.1 18080  tcp    open    connect  0
+```
+
+JSON/CSV 출력도 같은 필드를 제공합니다.
+
+## 주요 기능
+
+- CIDR, 단일 IP, IP range 입력 지원
+- `--targets` 생략 시 활성 private IPv4 인터페이스 자동 탐색
+- 기본 public IP 스캔 차단, `--allow-public`로 명시적 허용
+- 속도 우선 TCP connect scan
+- `--deep` 확장 스캔
+- UDP probe, ARP table, SSDP 발견 지원
+- table/json/csv 출력
+- timeout, concurrency, retries, max hosts 조절
+- GoReleaser 기반 macOS/Linux/Windows 릴리스
+- Homebrew 설치 지원
+
+## 옵션
 
 ```text
 --targets, -t           CIDR, IP, or range list
@@ -69,32 +143,29 @@ wifi-scanner --targets 192.168.1.0/24 --ports default --format csv > assets.csv
 --version               Print version
 ```
 
-## Safety Boundary
-
-Use this only on networks you own or are explicitly authorized to assess. This tool performs asset discovery: TCP connects, best-effort UDP probes, ARP table parsing, SSDP discovery, and optional lightweight banner reads. It does not implement exploit execution, authentication bypass, password guessing, stealth, evasion, or credential collection.
-
-## Development
+## 개발 및 테스트
 
 ```sh
 go test ./...
+go test -race ./...
+go vet ./...
 go build ./cmd/wifi-scanner
 ```
 
-Run a local smoke test:
+로컬에서 실제 포트 발견 테스트:
 
 ```sh
-python3 -m http.server 18080 &
-wifi-scanner --targets 127.0.0.1 --ports 18080 --banner
+python3 -m http.server 18080 --bind 127.0.0.1 &
+wifi-scanner --targets 127.0.0.1 --ports 18080 --banner --format table
 ```
 
-## Release
+## 릴리스
 
-Push a version tag to run GoReleaser:
+버전 태그를 푸시하면 GitHub Actions가 GoReleaser로 macOS, Linux, Windows 바이너리와 checksums 파일을 생성합니다.
 
 ```sh
 git tag v0.1.0
 git push origin main v0.1.0
 ```
 
-The release workflow builds macOS, Linux, and Windows binaries and uploads checksums to the GitHub release. The Homebrew formula in `Formula/wifi-scanner.rb` builds the current `main` branch from source, so the tap install path works immediately after the repository is pushed.
-
+릴리스 결과는 [GitHub Releases](https://github.com/bssm-oss/wifi-scanner/releases)에서 확인할 수 있습니다.
