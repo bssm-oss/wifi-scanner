@@ -14,7 +14,6 @@ class WifiScanner < Formula
 
   test do
     system "#{bin}/wifi-scanner", "--version"
-    assert_match "authorized internal", shell_output("#{bin}/wifi-scanner --help")
+    assert_match "authorized internal", shell_output("#{bin}/wifi-scanner --help 2>&1")
   end
 end
-
