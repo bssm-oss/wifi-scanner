@@ -1,0 +1,6 @@
+.omx/
+firebase-debug.log
+dist/
+coverage.out
+/wifi-scanner
+*.test
