@@ -58,6 +58,9 @@ func TestRunFindsLocalPortJSON(t *testing.T) {
 	if !strings.Contains(stdout.String(), `"port": `+strconvPort(port)) {
 		t.Fatalf("unexpected stdout: %s stderr=%s", stdout.String(), stderr.String())
 	}
+	if !strings.Contains(stdout.String(), `"url": "https://127.0.0.1:`+strconvPort(port)+`"`) {
+		t.Fatalf("stdout missing URL: %s", stdout.String())
+	}
 }
 
 func strconvPort(port int) string {

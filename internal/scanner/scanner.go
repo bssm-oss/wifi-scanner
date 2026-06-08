@@ -27,6 +27,7 @@ type Config struct {
 type Result struct {
 	IP        string `json:"ip"`
 	Port      int    `json:"port,omitempty"`
+	URL       string `json:"url,omitempty"`
 	Protocol  string `json:"protocol"`
 	Status    string `json:"status"`
 	Source    string `json:"source"`
@@ -134,6 +135,7 @@ func scanTCPPort(ctx context.Context, ip net.IP, port int, cfg Config) (Result, 
 		return Result{
 			IP:        ip.String(),
 			Port:      port,
+			URL:       HTTPSURL(ip.String(), port),
 			Protocol:  "tcp",
 			Status:    "open",
 			Source:    "connect",
@@ -203,6 +205,7 @@ func probeUDP(ctx context.Context, ip net.IP, port int, timeout time.Duration) (
 	return Result{
 		IP:        ip.String(),
 		Port:      port,
+		URL:       HTTPSURL(ip.String(), port),
 		Protocol:  "udp",
 		Status:    "responsive",
 		Source:    "udp-probe",
@@ -335,6 +338,7 @@ func DiscoverSSDP(ctx context.Context, timeout time.Duration) []Result {
 		results = append(results, Result{
 			IP:       key,
 			Port:     1900,
+			URL:      HTTPSURL(key, 1900),
 			Protocol: "udp",
 			Status:   "responsive",
 			Source:   "ssdp",
@@ -405,6 +409,13 @@ func isHTTPPort(port int) bool {
 	default:
 		return false
 	}
+}
+
+func HTTPSURL(ip string, port int) string {
+	if ip == "" || port <= 0 {
+		return ""
+	}
+	return fmt.Sprintf("https://%s:%d", ip, port)
 }
 
 func cleanBanner(s string) string {

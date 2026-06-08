@@ -12,6 +12,7 @@ func TestWriteFormats(t *testing.T) {
 	results := []scanner.Result{{
 		IP:       "127.0.0.1",
 		Port:     8080,
+		URL:      "https://127.0.0.1:8080",
 		Protocol: "tcp",
 		Status:   "open",
 		Source:   "connect",
@@ -24,6 +25,9 @@ func TestWriteFormats(t *testing.T) {
 		}
 		if !strings.Contains(buf.String(), "127.0.0.1") {
 			t.Fatalf("%s output missing IP: %s", format, buf.String())
+		}
+		if !strings.Contains(buf.String(), "https://127.0.0.1:8080") {
+			t.Fatalf("%s output missing URL: %s", format, buf.String())
 		}
 	}
 }

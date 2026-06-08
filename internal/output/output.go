@@ -26,7 +26,7 @@ func Write(w io.Writer, format string, results []scanner.Result) error {
 
 func writeTable(w io.Writer, results []scanner.Result) error {
 	tw := tabwriter.NewWriter(w, 0, 2, 2, ' ', 0)
-	if _, err := fmt.Fprintln(tw, "IP\tPORT\tPROTO\tSTATUS\tSOURCE\tLATENCY_MS\tBANNER"); err != nil {
+	if _, err := fmt.Fprintln(tw, "URL\tIP\tPORT\tPROTO\tSTATUS\tSOURCE\tLATENCY_MS\tBANNER"); err != nil {
 		return err
 	}
 	for _, r := range results {
@@ -34,7 +34,7 @@ func writeTable(w io.Writer, results []scanner.Result) error {
 		if r.Port > 0 {
 			port = strconv.Itoa(r.Port)
 		}
-		if _, err := fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%d\t%s\n", r.IP, port, r.Protocol, r.Status, r.Source, r.LatencyMS, r.Banner); err != nil {
+		if _, err := fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\t%d\t%s\n", r.URL, r.IP, port, r.Protocol, r.Status, r.Source, r.LatencyMS, r.Banner); err != nil {
 			return err
 		}
 	}
@@ -49,7 +49,7 @@ func writeJSON(w io.Writer, results []scanner.Result) error {
 
 func writeCSV(w io.Writer, results []scanner.Result) error {
 	cw := csv.NewWriter(w)
-	if err := cw.Write([]string{"ip", "port", "protocol", "status", "source", "latency_ms", "banner"}); err != nil {
+	if err := cw.Write([]string{"url", "ip", "port", "protocol", "status", "source", "latency_ms", "banner"}); err != nil {
 		return err
 	}
 	for _, r := range results {
@@ -58,6 +58,7 @@ func writeCSV(w io.Writer, results []scanner.Result) error {
 			port = strconv.Itoa(r.Port)
 		}
 		if err := cw.Write([]string{
+			r.URL,
 			r.IP,
 			port,
 			r.Protocol,

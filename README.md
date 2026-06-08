@@ -26,7 +26,7 @@ Homebrew 없이 릴리스 파일을 직접 받을 수도 있습니다.
 macOS Apple Silicon:
 
 ```sh
-VERSION=v0.1.0
+VERSION=v0.1.1
 curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_darwin_arm64.tar.gz"
 tar -xzf wifi-scanner.tar.gz
 sudo mv wifi-scanner /usr/local/bin/
@@ -36,7 +36,7 @@ wifi-scanner --version
 macOS Intel:
 
 ```sh
-VERSION=v0.1.0
+VERSION=v0.1.1
 curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_darwin_amd64.tar.gz"
 tar -xzf wifi-scanner.tar.gz
 sudo mv wifi-scanner /usr/local/bin/
@@ -46,7 +46,7 @@ wifi-scanner --version
 Linux x86_64:
 
 ```sh
-VERSION=v0.1.0
+VERSION=v0.1.1
 curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_linux_amd64.tar.gz"
 tar -xzf wifi-scanner.tar.gz
 sudo mv wifi-scanner /usr/local/bin/
@@ -106,11 +106,11 @@ wifi-scanner --targets 172.16.0.0/24 --deep --format table
 ## 결과 예시
 
 ```text
-IP         PORT   PROTO  STATUS  SOURCE   LATENCY_MS  BANNER
-127.0.0.1 18080  tcp    open    connect  0
+URL                       IP         PORT   PROTO  STATUS  SOURCE   LATENCY_MS  BANNER
+https://127.0.0.1:18080  127.0.0.1  18080  tcp    open    connect  0
 ```
 
-JSON/CSV 출력도 같은 필드를 제공합니다.
+JSON/CSV 출력도 `url` 필드를 제공합니다. 열린 TCP/UDP 포트는 `https://IP:PORT` 형태로 바로 복사해서 브라우저에 붙여 넣을 수 있게 표시됩니다.
 
 ## 주요 기능
 
@@ -164,8 +164,8 @@ wifi-scanner --targets 127.0.0.1 --ports 18080 --banner --format table
 버전 태그를 푸시하면 GitHub Actions가 GoReleaser로 macOS, Linux, Windows 바이너리와 checksums 파일을 생성합니다.
 
 ```sh
-git tag v0.1.0
-git push origin main v0.1.0
+git tag v0.1.1
+git push origin main v0.1.1
 ```
 
 릴리스 결과는 [GitHub Releases](https://github.com/bssm-oss/wifi-scanner/releases)에서 확인할 수 있습니다.
