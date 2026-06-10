@@ -107,10 +107,10 @@ wifi-scanner --targets 172.16.0.0/24 --deep --format table
 
 ```text
 URL                       IP         PORT   PROTO  STATUS  SOURCE   LATENCY_MS  BANNER
-https://127.0.0.1:18080  127.0.0.1  18080  tcp    open    connect  0
+http://127.0.0.1:18080  127.0.0.1  18080  tcp    open    connect  0
 ```
 
-JSON/CSV 출력도 `url` 필드를 제공합니다. 열린 TCP/UDP 포트는 `https://IP:PORT` 형태로 바로 복사해서 브라우저에 붙여 넣을 수 있게 표시됩니다.
+JSON/CSV 출력도 `url` 필드를 제공합니다. 열린 TCP/UDP 포트는 `http://IP:PORT` 형태로 바로 복사해서 브라우저에 붙여 넣을 수 있게 표시됩니다.
 
 ## 주요 기능
 

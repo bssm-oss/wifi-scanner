@@ -45,7 +45,7 @@ func TestScanTCPFindsLocalListener(t *testing.T) {
 	if results[0].Port != port || results[0].Protocol != "tcp" || results[0].Status != "open" {
 		t.Fatalf("unexpected result: %#v", results[0])
 	}
-	wantURL := "https://127.0.0.1:" + strconv.Itoa(port)
+	wantURL := "http://127.0.0.1:" + strconv.Itoa(port)
 	if results[0].URL != wantURL {
 		t.Fatalf("got URL %q want %q", results[0].URL, wantURL)
 	}
