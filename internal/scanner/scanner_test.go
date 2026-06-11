@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"net"
+	"net/http"
 	"strconv"
 	"strings"
 	"testing"
@@ -45,14 +46,87 @@ func TestScanTCPFindsLocalListener(t *testing.T) {
 	if results[0].Port != port || results[0].Protocol != "tcp" || results[0].Status != "open" {
 		t.Fatalf("unexpected result: %#v", results[0])
 	}
-	wantURL := "http://127.0.0.1:" + strconv.Itoa(port)
-	if results[0].URL != wantURL {
-		t.Fatalf("got URL %q want %q", results[0].URL, wantURL)
+	if results[0].URL != "" {
+		t.Fatalf("port-only scan should not synthesize URL, got %q", results[0].URL)
 	}
 	if !strings.Contains(results[0].Banner, "hello scanner") {
 		t.Fatalf("expected banner, got %q", results[0].Banner)
 	}
 	<-done
+}
+
+func TestScanSitesOnlyFindsHTTPServer(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	server := &http.Server{
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write([]byte("<html><title>asset app</title><body>ok</body></html>"))
+		}),
+	}
+	go func() {
+		_ = server.Serve(listener)
+	}()
+	defer server.Shutdown(context.Background())
+
+	port := listener.Addr().(*net.TCPAddr).Port
+	results, err := Scan(context.Background(), Config{
+		Targets:     []net.IP{net.ParseIP("127.0.0.1")},
+		TCPPorts:    []int{port},
+		Timeout:     time.Second,
+		Concurrency: 4,
+		ProbeSites:  true,
+		SitesOnly:   true,
+		SiteTimeout: time.Second,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results) != 1 {
+		t.Fatalf("got %d results want 1: %#v", len(results), results)
+	}
+	wantURL := "http://127.0.0.1:" + strconv.Itoa(port)
+	if results[0].URL != wantURL || !results[0].Site || results[0].HTTPStatus != http.StatusOK {
+		t.Fatalf("unexpected site result: %#v", results[0])
+	}
+	if results[0].Title != "asset app" {
+		t.Fatalf("got title %q", results[0].Title)
+	}
+}
+
+func TestScanSitesOnlyFiltersDisallowedStatus(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	server := &http.Server{
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.NotFound(w, r)
+		}),
+	}
+	go func() {
+		_ = server.Serve(listener)
+	}()
+	defer server.Shutdown(context.Background())
+
+	port := listener.Addr().(*net.TCPAddr).Port
+	results, err := Scan(context.Background(), Config{
+		Targets:     []net.IP{net.ParseIP("127.0.0.1")},
+		TCPPorts:    []int{port},
+		Timeout:     time.Second,
+		Concurrency: 4,
+		ProbeSites:  true,
+		SitesOnly:   true,
+		SiteTimeout: time.Second,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results) != 0 {
+		t.Fatalf("404 should be filtered by default: %#v", results)
+	}
 }
 
 func TestParseARPTable(t *testing.T) {

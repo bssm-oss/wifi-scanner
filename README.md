@@ -26,7 +26,7 @@ Homebrew 없이 릴리스 파일을 직접 받을 수도 있습니다.
 macOS Apple Silicon:
 
 ```sh
-VERSION=v0.1.1
+VERSION=v0.1.2
 curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_darwin_arm64.tar.gz"
 tar -xzf wifi-scanner.tar.gz
 sudo mv wifi-scanner /usr/local/bin/
@@ -36,7 +36,7 @@ wifi-scanner --version
 macOS Intel:
 
 ```sh
-VERSION=v0.1.1
+VERSION=v0.1.2
 curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_darwin_amd64.tar.gz"
 tar -xzf wifi-scanner.tar.gz
 sudo mv wifi-scanner /usr/local/bin/
@@ -46,7 +46,7 @@ wifi-scanner --version
 Linux x86_64:
 
 ```sh
-VERSION=v0.1.1
+VERSION=v0.1.2
 curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_linux_amd64.tar.gz"
 tar -xzf wifi-scanner.tar.gz
 sudo mv wifi-scanner /usr/local/bin/
@@ -69,6 +69,24 @@ go install github.com/bssm-oss/wifi-scanner/cmd/wifi-scanner@latest
 
 ```sh
 wifi-scanner
+```
+
+열린 포트만 찾기:
+
+```sh
+wifi-scanner --targets 192.168.1.0/24 --mode ports
+```
+
+브라우저로 실제 들어가지는 사이트만 찾기:
+
+```sh
+wifi-scanner --targets 192.168.1.0/24 --sites-only
+```
+
+열린 포트는 전부 보여주고, 들어가지는 사이트에는 HTTP 상태/제목을 같이 표시:
+
+```sh
+wifi-scanner --targets 192.168.1.0/24 --mode all
 ```
 
 CIDR 대역을 빠르게 스캔:
@@ -105,12 +123,14 @@ wifi-scanner --targets 172.16.0.0/24 --deep --format table
 
 ## 결과 예시
 
+사이트만 찾을 때:
+
 ```text
-URL                       IP         PORT   PROTO  STATUS  SOURCE   LATENCY_MS  BANNER
-http://127.0.0.1:18080  127.0.0.1  18080  tcp    open    connect  0
+URL                     IP         PORT   PROTO  STATUS  SITE  HTTP  SOURCE   LATENCY_MS  TITLE     BANNER
+http://127.0.0.1:18080  127.0.0.1  18080  tcp    open    yes   200   connect  0           test app
 ```
 
-JSON/CSV 출력도 `url` 필드를 제공합니다. 열린 TCP/UDP 포트는 `http://IP:PORT` 형태로 바로 복사해서 브라우저에 붙여 넣을 수 있게 표시됩니다.
+포트만 찾을 때는 사이트로 확인된 URL을 억지로 만들지 않고 열린 포트 자체를 보여줍니다. `--sites-only` 또는 `--mode all`을 쓰면 실제 HTTP/S 요청을 수행하고, 성공한 사이트는 `url`, `site`, `http_status`, `content_type`, `title` 필드를 JSON/CSV에도 제공합니다.
 
 ## 주요 기능
 
@@ -118,6 +138,9 @@ JSON/CSV 출력도 `url` 필드를 제공합니다. 열린 TCP/UDP 포트는 `ht
 - `--targets` 생략 시 활성 private IPv4 인터페이스 자동 탐색
 - 기본 public IP 스캔 차단, `--allow-public`로 명시적 허용
 - 속도 우선 TCP connect scan
+- `--mode ports`: 열린 포트만 찾기
+- `--sites-only` / `--mode sites`: 브라우저로 실제 들어가지는 사이트만 찾기
+- `--mode all`: 열린 포트 전체와 사이트 판별 정보를 함께 보기
 - `--deep` 확장 스캔
 - UDP probe, ARP table, SSDP 발견 지원
 - table/json/csv 출력
@@ -131,6 +154,11 @@ JSON/CSV 출력도 `url` 필드를 제공합니다. 열린 TCP/UDP 포트는 `ht
 --targets, -t           CIDR, IP, or range list
 --ports, -p             TCP ports: default, all, or list/range
 --udp-ports             UDP probes: default, none, all, or list/range
+--mode                  ports, sites, or all
+--sites-only            Shortcut for --mode sites
+--ports-only            Shortcut for --mode ports
+--site-codes            HTTP status codes accepted by sites mode, default 200-399
+--site-timeout          Per-site HTTP/S probe timeout, default 1200ms
 --deep                  Exhaustive TCP ports plus discovery helpers
 --format                table, json, or csv
 --timeout               Per-port timeout, default 300ms
@@ -164,8 +192,8 @@ wifi-scanner --targets 127.0.0.1 --ports 18080 --banner --format table
 버전 태그를 푸시하면 GitHub Actions가 GoReleaser로 macOS, Linux, Windows 바이너리와 checksums 파일을 생성합니다.
 
 ```sh
-git tag v0.1.1
-git push origin main v0.1.1
+git tag v0.1.2
+git push origin main v0.1.2
 ```
 
 릴리스 결과는 [GitHub Releases](https://github.com/bssm-oss/wifi-scanner/releases)에서 확인할 수 있습니다.

@@ -2,7 +2,7 @@ class WifiScanner < Formula
   desc "Fast authorized internal network asset discovery scanner"
   homepage "https://github.com/bssm-oss/wifi-scanner"
   url "https://github.com/bssm-oss/wifi-scanner.git", branch: "main"
-  version "0.1.1"
+  version "0.1.2"
   license "MIT"
 
   depends_on "go" => :build
