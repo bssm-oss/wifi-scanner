@@ -26,7 +26,7 @@ Homebrew 없이 릴리스 파일을 직접 받을 수도 있습니다.
 macOS Apple Silicon:
 
 ```sh
-VERSION=v0.1.2
+VERSION=v0.1.3
 curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_darwin_arm64.tar.gz"
 tar -xzf wifi-scanner.tar.gz
 sudo mv wifi-scanner /usr/local/bin/
@@ -36,7 +36,7 @@ wifi-scanner --version
 macOS Intel:
 
 ```sh
-VERSION=v0.1.2
+VERSION=v0.1.3
 curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_darwin_amd64.tar.gz"
 tar -xzf wifi-scanner.tar.gz
 sudo mv wifi-scanner /usr/local/bin/
@@ -46,7 +46,7 @@ wifi-scanner --version
 Linux x86_64:
 
 ```sh
-VERSION=v0.1.2
+VERSION=v0.1.3
 curl -L -o wifi-scanner.tar.gz "https://github.com/bssm-oss/wifi-scanner/releases/download/${VERSION}/wifi-scanner_${VERSION#v}_linux_amd64.tar.gz"
 tar -xzf wifi-scanner.tar.gz
 sudo mv wifi-scanner /usr/local/bin/
@@ -145,8 +145,26 @@ http://127.0.0.1:18080  127.0.0.1  18080  tcp    open    yes   200   connect  0 
 - UDP probe, ARP table, SSDP 발견 지원
 - table/json/csv 출력
 - timeout, concurrency, retries, max hosts 조절
+- bash/zsh/fish 자동완성 지원
 - GoReleaser 기반 macOS/Linux/Windows 릴리스
 - Homebrew 설치 지원
+
+## 자동완성
+
+Homebrew로 설치하면 bash/zsh/fish completion 파일이 함께 설치됩니다. 새 터미널을 열면 `wifi-scanner --` 뒤에서 Tab 자동완성을 사용할 수 있습니다.
+
+직접 설치한 경우에는 아래처럼 shell 설정에 추가할 수 있습니다.
+
+```sh
+# zsh
+wifi-scanner completion zsh > ~/.zsh/completions/_wifi-scanner
+
+# bash
+wifi-scanner completion bash > ~/.local/share/bash-completion/completions/wifi-scanner
+
+# fish
+wifi-scanner completion fish > ~/.config/fish/completions/wifi-scanner.fish
+```
 
 ## 옵션
 
@@ -192,8 +210,8 @@ wifi-scanner --targets 127.0.0.1 --ports 18080 --banner --format table
 버전 태그를 푸시하면 GitHub Actions가 GoReleaser로 macOS, Linux, Windows 바이너리와 checksums 파일을 생성합니다.
 
 ```sh
-git tag v0.1.2
-git push origin main v0.1.2
+git tag v0.1.3
+git push origin main v0.1.3
 ```
 
 릴리스 결과는 [GitHub Releases](https://github.com/bssm-oss/wifi-scanner/releases)에서 확인할 수 있습니다.

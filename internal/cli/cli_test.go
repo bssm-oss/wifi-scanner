@@ -21,6 +21,53 @@ func TestRunVersion(t *testing.T) {
 	}
 }
 
+func TestRunHelpIsKorean(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := Run([]string{"--help"}, &stdout, &stderr, VersionInfo{Version: "test"})
+	if code != 0 {
+		t.Fatalf("code=%d stderr=%s", code, stderr.String())
+	}
+	out := stdout.String()
+	for _, want := range []string{"내부망", "사용법", "--sites-only", "--ports-only", "자동완성"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("help missing %q: %s", want, out)
+		}
+	}
+}
+
+func TestRunCompletionScripts(t *testing.T) {
+	tests := []struct {
+		shell    string
+		want     string
+		wantFlag string
+	}{
+		{shell: "zsh", want: "#compdef wifi-scanner", wantFlag: "--sites-only"},
+		{shell: "bash", want: "complete -F _wifi_scanner_completion wifi-scanner", wantFlag: "--sites-only"},
+		{shell: "fish", want: "complete -c wifi-scanner", wantFlag: "sites-only"},
+	}
+	for _, tt := range tests {
+		var stdout, stderr bytes.Buffer
+		code := Run([]string{"completion", tt.shell}, &stdout, &stderr, VersionInfo{Version: "test"})
+		if code != 0 {
+			t.Fatalf("%s: code=%d stderr=%s", tt.shell, code, stderr.String())
+		}
+		if !strings.Contains(stdout.String(), tt.want) || !strings.Contains(stdout.String(), tt.wantFlag) {
+			t.Fatalf("%s completion missing expected content: %s", tt.shell, stdout.String())
+		}
+	}
+}
+
+func TestRunCompletionInvalidShell(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := Run([]string{"completion", "powershell"}, &stdout, &stderr, VersionInfo{Version: "test"})
+	if code == 0 {
+		t.Fatalf("expected failure stdout=%s stderr=%s", stdout.String(), stderr.String())
+	}
+	if !strings.Contains(stderr.String(), "지원하지 않는 shell") {
+		t.Fatalf("unexpected stderr: %s", stderr.String())
+	}
+}
+
 func TestRunFindsLocalPortJSON(t *testing.T) {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
